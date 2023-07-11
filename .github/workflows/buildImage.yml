@@ -1,0 +1,36 @@
+name: Build Image and Push to ECR
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Java
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+
+    - name: Build and test Spring Boot project
+      run: ./gradlew build --no-daemon
+
+    - name: Set up Docker
+      uses: docker/setup-docker@v1
+
+    - name: Build Docker image
+      run: docker build -t ${{ github.repository }}_${{ github.ref_slug }}:0.0.${{ github.run_attempt }} .
+
+#     - name: Log in to AWS ECR
+#       uses: aws-actions/amazon-ecr-login@v1
+
+#     - name: Push Docker image to ECR
+#       run: |
+#         docker tag ${{ github.repository }}_${{ github.ref_slug }}:0.0.${{ github.run_attempt }} <AWS_ECR_REPOSITORY_URI>:0.0.${{ github.run_attempt }}
+#         docker push <AWS_ECR_REPOSITORY_URI>:0.0.${{ github.run_attempt }}
