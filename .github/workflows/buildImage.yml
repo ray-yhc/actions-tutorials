@@ -46,12 +46,17 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       run: |
-      
+        # docker build
         docker build -t $IMAGE_NAME .
+        
+        # create new repository on ECR
         aws ecr create-repository \
           --repository-name $ECR_REPOSITORY \
           --image-scanning-configuration scanOnPush=true \
           --region ap-northeast-2
+          
+        # upload img to ECR
         docker tag $IMAGE_NAME $ECR_ROOT/$IMAGE_NAME
         docker push $ECR_ROOT/$IMAGE_NAME
+        
         echo "::set-output name=image::$IMAGE_NAME"
