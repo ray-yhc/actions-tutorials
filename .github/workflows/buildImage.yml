@@ -49,6 +49,10 @@ jobs:
         # docker build
         docker build -t $IMAGE_NAME .
           
-        # upload img to ECR
+        # upload img(:branch&version) to ECR
         docker tag $IMAGE_NAME $ECR_ROOT/$IMAGE_NAME
         docker push $ECR_ROOT/$IMAGE_NAME
+          
+        # upload img(:latest) to ECR
+        docker tag $IMAGE_NAME $ECR_ROOT/$ECR_REPOSITORY:latest
+        docker push $ECR_ROOT/$ECR_REPOSITORY:latest
