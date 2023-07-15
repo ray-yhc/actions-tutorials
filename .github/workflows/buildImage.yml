@@ -4,7 +4,7 @@ name: Build Image and Push to ECR
 env:
   ECR_ROOT: 495079454658.dkr.ecr.ap-northeast-2.amazonaws.com
   ECR_REPOSITORY: ${{ github.repository }}
-  IMAGE_NAME: ${{ github.repository }}:${{ github.ref_name }}_0.0.${{ github.run_attempt }} 
+  IMAGE_NAME: ${{ github.repository }}:${{ github.ref_name }}_0.0.${{ github.run_number }} 
 
 on:
   push:
