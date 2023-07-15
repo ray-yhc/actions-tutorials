@@ -1,11 +1,10 @@
 name: Build Image and Push to ECR
 
 
-# env:
-#   AWS_REGION: region
-#   ECR_REGISTRY: ecr_registry주소
-#   ECR_REPOSITORY: repo주소
-#   IMAGE_TAG: latest
+env:
+  ECR_ROOT: 495079454658.dkr.ecr.ap-northeast-2.amazonaws.com
+  ECR_REPOSITORY: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}:${{ github.ref_name }}_0.0.${{ github.run_number }} 
 
 on:
   push:
@@ -31,29 +30,25 @@ jobs:
 
     - name: Build and test Spring Boot project
       run: |
-        chmod +x gradlew
         ./gradlew build --no-daemon
       
-    ## temp
-    - name: build
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
       run: |
-        docker build -t ${{ github.repository }}_${{ github.ref_name }}:0.0.${{ github.run_attempt }} .
-
-#     - name: Configure AWS credentials
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: ${{ env.AWS_REGION }}
-
-#     - name: Login to Amazon ECR
-#       id: login-ecr
-#       uses: aws-actions/amazon-ecr-login@v1
-
-#     - name: Build, tag, and push image to Amazon ECR
-#       id: build-image
-#       run: |
-#         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-#         docker build -t ${{ github.repository }}_${{ github.ref_slug }}:0.0.${{ github.run_attempt }} .
-#         docker push ${{ github.repository }}_${{ github.ref_slug }}:0.0.${{ github.run_attempt }}
-#         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        # docker build
+        docker build -t $IMAGE_NAME .
+          
+        # upload img to ECR
+        docker tag $IMAGE_NAME $ECR_ROOT/$IMAGE_NAME
+        docker push $ECR_ROOT/$IMAGE_NAME
